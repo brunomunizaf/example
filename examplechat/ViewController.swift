@@ -113,25 +113,31 @@ class ViewController: UIViewController {
 
         viewModel.messages
             .receive(on: DispatchQueue.main)
-            .filter { !$0.isEmpty }
+            .filter {
+                !$0.isEmpty
+            }
             .print()
             .sink { [unowned self] sections in
-                guard !self.sections.isEmpty && isViewLoaded else {
-                    self.sections = sections
-                    collectionView.reloadData()
-                    return
-                }
+                //                    guard !self.sections.isEmpty && isViewLoaded else {
+                //                        self.sections = sections
+                //                        collectionView.reloadData()
+                //                        return
+                //                    }
 
                 func process() {
                     let changeSet = StagedChangeset(source: self.sections, target: sections).flattenIfPossible()
                     collectionView.reload(
-                        using: changeSet, interrupt: { changeSet in
-                            guard changeSet.sectionInserted.isEmpty else { return true }
+                        using: changeSet,
+                        interrupt: { changeSet in
+                            guard !self.sections.isEmpty else {
+                                return true
+                            }
                             return false
                         }, onInterruptedReload: {
-                            let positionSnapshot = ChatLayoutPositionSnapshot(
-                                indexPath: IndexPath(item: 0, section: 0), kind: .footer, edge: .bottom
-                            )
+                            guard let lastSection = self.sections.last else {
+                                return
+                            }
+                            let positionSnapshot = ChatLayoutPositionSnapshot(indexPath: IndexPath(item: lastSection.elements.count - 1, section: self.sections.count - 1), kind: .cell, edge: .bottom)
                             self.collectionView.reloadData()
                             self.chatLayout.restoreContentOffset(with: positionSnapshot)
                         },
@@ -148,7 +154,9 @@ class ViewController: UIViewController {
                         action: .onEmpty,
                         executionType: .once,
                         actionBlock: { [weak self] in
-                            guard let _ = self else { return }
+                            guard let _ = self else {
+                                return
+                            }
                             process()
                         }
                     )
@@ -177,7 +185,9 @@ extension ViewController: InputBarAccessoryViewDelegate {
         currentInterfaceActions.options.insert(.sendingMessage)
 
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                return
+            }
 
             guard let messageText = messageText else {
                 self.currentInterfaceActions.options.remove(.sendingMessage)
@@ -198,7 +208,7 @@ extension ViewController: InputBarAccessoryViewDelegate {
         let contentOffsetAtBottom = CGPoint(x: collectionView.contentOffset.x,
                                             y: chatLayout.collectionViewContentSize.height - collectionView.frame.height + collectionView.adjustedContentInset.bottom)
 
-        guard contentOffsetAtBottom != collectionView.contentOffset else {
+        guard contentOffsetAtBottom.y > collectionView.contentOffset.y else {
             completion?()
             return
         }
@@ -272,7 +282,9 @@ extension ViewController: KeyboardListenerDelegate {
     }
 
     func keyboardDidChangeFrame(info: KeyboardInfo) {
-        guard currentInterfaceActions.options.contains(.changingKeyboardFrame) else { return }
+        guard currentInterfaceActions.options.contains(.changingKeyboardFrame) else {
+            return
+        }
         currentInterfaceActions.options.remove(.changingKeyboardFrame)
     }
 }
