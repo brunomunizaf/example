@@ -14,13 +14,13 @@
 		32166A222716AFBE002AD6D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 32166A212716AFBE002AD6D8 /* Assets.xcassets */; };
 		32166A252716AFBE002AD6D8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 32166A232716AFBE002AD6D8 /* LaunchScreen.storyboard */; };
 		32166A2E2716B073002AD6D8 /* ChatLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 32166A2D2716B073002AD6D8 /* ChatLayout */; };
-		32166A312716B088002AD6D8 /* InputBarAccessoryView in Frameworks */ = {isa = PBXBuildFile; productRef = 32166A302716B088002AD6D8 /* InputBarAccessoryView */; };
 		32166A342716B0E9002AD6D8 /* DifferenceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 32166A332716B0E9002AD6D8 /* DifferenceKit */; };
 		32166A362716B291002AD6D8 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32166A352716B291002AD6D8 /* Helpers.swift */; };
 		32166A392716B49D002AD6D8 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 32166A382716B49D002AD6D8 /* SnapKit */; };
 		32166A3B2716B4FE002AD6D8 /* CollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32166A3A2716B4FE002AD6D8 /* CollectionCell.swift */; };
 		32166A3D2716B5F7002AD6D8 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32166A3C2716B5F7002AD6D8 /* Extensions.swift */; };
 		32166A3F2716B781002AD6D8 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32166A3E2716B781002AD6D8 /* ViewModel.swift */; };
+		32BC321E2717783800726627 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BC321D2717783800726627 /* InputView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +36,7 @@
 		32166A3A2716B4FE002AD6D8 /* CollectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionCell.swift; sourceTree = "<group>"; };
 		32166A3C2716B5F7002AD6D8 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		32166A3E2716B781002AD6D8 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
+		32BC321D2717783800726627 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +47,6 @@
 				32166A342716B0E9002AD6D8 /* DifferenceKit in Frameworks */,
 				32166A392716B49D002AD6D8 /* SnapKit in Frameworks */,
 				32166A2E2716B073002AD6D8 /* ChatLayout in Frameworks */,
-				32166A312716B088002AD6D8 /* InputBarAccessoryView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +83,7 @@
 				32166A3A2716B4FE002AD6D8 /* CollectionCell.swift */,
 				32166A3C2716B5F7002AD6D8 /* Extensions.swift */,
 				32166A3E2716B781002AD6D8 /* ViewModel.swift */,
+				32BC321D2717783800726627 /* InputView.swift */,
 			);
 			path = examplechat;
 			sourceTree = "<group>";
@@ -105,7 +106,6 @@
 			name = examplechat;
 			packageProductDependencies = (
 				32166A2D2716B073002AD6D8 /* ChatLayout */,
-				32166A302716B088002AD6D8 /* InputBarAccessoryView */,
 				32166A332716B0E9002AD6D8 /* DifferenceKit */,
 				32166A382716B49D002AD6D8 /* SnapKit */,
 			);
@@ -139,7 +139,6 @@
 			mainGroup = 32166A0C2716AFBD002AD6D8;
 			packageReferences = (
 				32166A2C2716B073002AD6D8 /* XCRemoteSwiftPackageReference "ChatLayout" */,
-				32166A2F2716B088002AD6D8 /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */,
 				32166A322716B0E9002AD6D8 /* XCRemoteSwiftPackageReference "DifferenceKit" */,
 				32166A372716B49D002AD6D8 /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
@@ -175,6 +174,7 @@
 				32166A192716AFBD002AD6D8 /* AppDelegate.swift in Sources */,
 				32166A1B2716AFBD002AD6D8 /* SceneDelegate.swift in Sources */,
 				32166A362716B291002AD6D8 /* Helpers.swift in Sources */,
+				32BC321E2717783800726627 /* InputView.swift in Sources */,
 				32166A3B2716B4FE002AD6D8 /* CollectionCell.swift in Sources */,
 				32166A3F2716B781002AD6D8 /* ViewModel.swift in Sources */,
 			);
@@ -406,14 +406,6 @@
 				kind = branch;
 			};
 		};
-		32166A2F2716B088002AD6D8 /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nathantannar4/InputBarAccessoryView";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
-			};
-		};
 		32166A322716B0E9002AD6D8 /* XCRemoteSwiftPackageReference "DifferenceKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ra1028/DifferenceKit";
@@ -437,11 +429,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 32166A2C2716B073002AD6D8 /* XCRemoteSwiftPackageReference "ChatLayout" */;
 			productName = ChatLayout;
-		};
-		32166A302716B088002AD6D8 /* InputBarAccessoryView */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 32166A2F2716B088002AD6D8 /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */;
-			productName = InputBarAccessoryView;
 		};
 		32166A332716B0E9002AD6D8 /* DifferenceKit */ = {
 			isa = XCSwiftPackageProductDependency;

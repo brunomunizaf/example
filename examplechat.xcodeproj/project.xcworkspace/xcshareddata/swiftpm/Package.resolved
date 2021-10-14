@@ -20,15 +20,6 @@
         }
       },
       {
-        "package": "InputBarAccessoryView",
-        "repositoryURL": "https://github.com/nathantannar4/InputBarAccessoryView",
-        "state": {
-          "branch": null,
-          "revision": "6d3d205f29b80f8fa9a9616ad801c488293242bf",
-          "version": "5.4.0"
-        }
-      },
-      {
         "package": "SnapKit",
         "repositoryURL": "https://github.com/SnapKit/SnapKit",
         "state": {

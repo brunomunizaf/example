@@ -3,7 +3,6 @@ import Combine
 import Foundation
 import ChatLayout
 import DifferenceKit
-import InputBarAccessoryView
 
 typealias OutgoingTextCell = CollectionCell<FlexibleSpace, StackMessageView>
 typealias IncomingTextCell = CollectionCell<StackMessageView, FlexibleSpace>
@@ -37,49 +36,37 @@ class ViewController: UIViewController {
         return true
     }
 
+    lazy private var inputBarView = InputView()
+
     private let viewModel = ViewModel()
     private let chatLayout = ChatLayout()
     private var animator: ManualAnimator?
     private var collectionView: UICollectionView!
-    private let inputBarView = InputBarAccessoryView()
     private var currentInterfaceActions: SetActor<Set<InterfaceActions>, ReactionTypes> = SetActor()
     private var currentControllerActions: SetActor<Set<ControllerActions>, ReactionTypes> = SetActor()
 
     private var cancellables = Set<AnyCancellable>()
     private var sections = [ArraySection<ChatSection, ChatItem>]()
 
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        navigationController!.navigationBar.isTranslucent = false
+        let barAppearance = UINavigationBarAppearance()
+        barAppearance.backgroundColor = UIColor.white
+        barAppearance.backgroundEffect = .none
+        barAppearance.shadowColor = UIColor.lightGray
+        navigationController!.navigationBar.standardAppearance = barAppearance
+        navigationController!.navigationBar.scrollEdgeAppearance = navigationController!.navigationBar.standardAppearance
+    }
+
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         collectionView.collectionViewLayout.invalidateLayout()
     }
 
-    public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        guard isViewLoaded else {
-            return
-        }
-        currentInterfaceActions.options.insert(.changingFrameSize)
-        let positionSnapshot = chatLayout.getContentOffsetSnapshot(from: .bottom)
-        collectionView.collectionViewLayout.invalidateLayout()
-        collectionView.setNeedsLayout()
-        coordinator.animate(alongsideTransition: { _ in
-            self.collectionView.performBatchUpdates(nil)
-        }, completion: { _ in
-            if let positionSnapshot = positionSnapshot,
-               !self.isUserInitiatedScrolling {
-                self.chatLayout.restoreContentOffset(with: positionSnapshot)
-            }
-            self.collectionView.collectionViewLayout.invalidateLayout()
-            self.currentInterfaceActions.options.remove(.changingFrameSize)
-        })
-
-        super.viewWillTransition(to: size, with: coordinator)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        inputBarView.delegate = self
-        inputBarView.shouldAnimateTextDidChangeLayout = true
 
         chatLayout.settings.interItemSpacing = 8
         chatLayout.settings.interSectionSpacing = 8
@@ -111,32 +98,30 @@ class ViewController: UIViewController {
 
         KeyboardListener.shared.add(delegate: self)
 
+        inputBarView.maxHeight = { [weak self] in
+            guard let self = self else { return 150 }
+
+            let maxHeight = self.collectionView.frame.height
+            - self.collectionView.adjustedContentInset.top
+            - self.collectionView.adjustedContentInset.bottom
+            + self.inputBarView.bounds.height
+
+            return maxHeight * 0.9
+        }
+
         viewModel.messages
             .receive(on: DispatchQueue.main)
-            .filter {
-                !$0.isEmpty
-            }
-            .print()
+            .filter { !$0.isEmpty }
             .sink { [unowned self] sections in
-                //                    guard !self.sections.isEmpty && isViewLoaded else {
-                //                        self.sections = sections
-                //                        collectionView.reloadData()
-                //                        return
-                //                    }
-
                 func process() {
                     let changeSet = StagedChangeset(source: self.sections, target: sections).flattenIfPossible()
                     collectionView.reload(
                         using: changeSet,
                         interrupt: { changeSet in
-                            guard !self.sections.isEmpty else {
-                                return true
-                            }
+                            guard !self.sections.isEmpty else { return true }
                             return false
                         }, onInterruptedReload: {
-                            guard let lastSection = self.sections.last else {
-                                return
-                            }
+                            guard let lastSection = self.sections.last else { return }
                             let positionSnapshot = ChatLayoutPositionSnapshot(indexPath: IndexPath(item: lastSection.elements.count - 1, section: self.sections.count - 1), kind: .cell, edge: .bottom)
                             self.collectionView.reloadData()
                             self.chatLayout.restoreContentOffset(with: positionSnapshot)
@@ -154,9 +139,7 @@ class ViewController: UIViewController {
                         action: .onEmpty,
                         executionType: .once,
                         actionBlock: { [weak self] in
-                            guard let _ = self else {
-                                return
-                            }
+                            guard let _ = self else { return }
                             process()
                         }
                     )
@@ -168,40 +151,11 @@ class ViewController: UIViewController {
                 process()
             }
             .store(in: &cancellables)
-    }
-}
 
-extension ViewController: InputBarAccessoryViewDelegate {
-    func inputBar(_ inputBar: InputBarAccessoryView, didChangeIntrinsicContentTo size: CGSize) {
-        guard !currentInterfaceActions.options.contains(.sendingMessage) else {
-            return
-        }
-
-        scrollToBottom()
-    }
-
-    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        let messageText = inputBar.inputTextView.text
-        currentInterfaceActions.options.insert(.sendingMessage)
-
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            guard let messageText = messageText else {
-                self.currentInterfaceActions.options.remove(.sendingMessage)
-                return
-            }
-
-            self.scrollToBottom(completion: {
-                self.currentInterfaceActions.options.remove(.sendingMessage)
-                self.viewModel.send(messageText)
-            })
-        }
-
-        inputBar.inputTextView.text = String()
-        inputBar.invalidatePlugins()
+        inputBarView.send
+            .publisher(for: .touchUpInside)
+            .sink { [unowned self] in viewModel.send(self.inputBarView.text.text) }
+            .store(in: &cancellables)
     }
 
     func scrollToBottom(completion: (() -> Void)? = nil) {
@@ -270,11 +224,6 @@ extension ViewController: KeyboardListenerDelegate {
                 if let positionSnapshot = positionSnapshot, !self.isUserInitiatedScrolling {
                     self.chatLayout.restoreContentOffset(with: positionSnapshot)
                 }
-                if #available(iOS 13.0, *) {
-                    //
-                } else {
-                    self.collectionView.collectionViewLayout.invalidateLayout()
-                }
             }, completion: { _ in
                 self.currentInterfaceActions.options.remove(.changingContentInsets)
             })
@@ -282,9 +231,7 @@ extension ViewController: KeyboardListenerDelegate {
     }
 
     func keyboardDidChangeFrame(info: KeyboardInfo) {
-        guard currentInterfaceActions.options.contains(.changingKeyboardFrame) else {
-            return
-        }
+        guard currentInterfaceActions.options.contains(.changingKeyboardFrame) else { return }
         currentInterfaceActions.options.remove(.changingKeyboardFrame)
     }
 }
